@@ -57,15 +57,15 @@ def parse_values(values, outfile):
                 latest_row.append("")
                 continue
             # If we reach an end column, then handle the closing ')'
-            if column == 'NULL)':
-                latest_row.append("")
-                latest_row.append(")")
-                continue
+            # if column == 'NULL)':
+            #     latest_row.append("")
+                # latest_row.append(")")
+                # continue
             # If we reach the end of the insert, then handle the closing ');'
-            if column == 'NULL);':
-                latest_row.append("")
-                latest_row.append(");")
-                continue
+            # if column == 'NULL);':
+            #     latest_row.append("")
+            #     latest_row.append(");")
+                # continue
             # If our string starts with an open paren
             if column[0] == "(":
                 # Assume that this column does not begin
@@ -81,7 +81,12 @@ def parse_values(values, outfile):
                     #    2) the current entry starts with a (
                     if latest_row[-1][-1] == ")":
                         # Remove the close paren.
-                        latest_row[-1] = latest_row[-1][:-1]
+                        if latest_row[-1] == "NULL)":
+                            #Handle the NULL case with a closing param
+                            latest_row[-1] = ""
+                        else:
+                            latest_row[-1] = latest_row[-1][:-1]
+
                         new_row = True
                 # If we've found a new row, write it out
                 # and begin our new one
@@ -99,7 +104,12 @@ def parse_values(values, outfile):
         # Make sure to remove the semicolon and
         # the close paren.
         if latest_row[-1][-2:] == ");":
-            latest_row[-1] = latest_row[-1][:-2]
+            if latest_row[-1] == "NULL);":
+                #Handle the closing param with a NULL value
+                latest_row[-1] = ""
+            else:
+                latest_row[-1] = latest_row[-1][:-2]
+
             writer.writerow(latest_row)
 
 
