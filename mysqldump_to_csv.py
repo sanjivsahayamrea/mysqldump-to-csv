@@ -15,7 +15,7 @@ def is_insert(line):
     """
     Returns true if the line begins a SQL insert statement.
     """
-    return line.startswith('INSERT INTO') or False
+    return line.startswith('INSERT INTO `ChangeLog`') or False
 
 
 def get_values(line):
@@ -49,12 +49,22 @@ def parse_values(values, outfile):
                         strict=True
     )
 
-    writer = csv.writer(outfile, quoting=csv.QUOTE_MINIMAL)
+    writer = csv.writer(outfile, quoting=csv.QUOTE_ALL)
     for reader_row in reader:
         for column in reader_row:
             # If our current string is empty...
             if len(column) == 0 or column == 'NULL':
-                latest_row.append(chr(0))
+                latest_row.append("")
+                continue
+            # If we reach an end column, then handle the closing ')'
+            if column == 'NULL)':
+                latest_row.append("")
+                latest_row.append(")")
+                continue
+            # If we reach the end of the insert, then handle the closing ');'
+            if column == 'NULL);':
+                latest_row.append("")
+                latest_row.append(");")
                 continue
             # If our string starts with an open paren
             if column[0] == "(":
